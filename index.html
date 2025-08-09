@@ -1,116 +1,592 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Solana Pay Demo</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background-color: #f0f0f0;
-      margin: 0;
-      padding: 50px;
-      min-height: 100vh;
-    }
-    h1 {
-      color: #333;
-    }
-    .wallet-button, .pay-button {
-      padding: 12px 24px;
-      font-size: 18px;
-      margin: 10px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .wallet-button {
-      background-color: #6200ea;
-      color: white;
-    }
-    .pay-button {
-      background-color: #4CAF50;
-      color: white;
-    }
-    .pay-button:disabled {
-      background-color: #ccc;
-      cursor: not-allowed;
-    }
-    .status {
-      margin-top: 20px;
-      font-size: 16px;
-      color: red;
-    }
-    .status.success {
-      color: green;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Learning Tool</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fff, #f0f0f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+        .wallet-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .wallet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .wallet-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #dc3545;
+        }
+        .status-indicator.connected {
+            background: #28a745;
+        }
+        .connect-btn {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .connect-btn:hover {
+            transform: translateY(-2px);
+        }
+        .connect-btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .wallet-info {
+            display: none;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .wallet-info.show {
+            display: block;
+        }
+        .address-display {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            word-break: break-all;
+            margin: 10px 0;
+            position: relative;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .balance-display {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 15px 0;
+        }
+        .feature-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .feature-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.2s;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+        .feature-name {
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .feature-desc {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+        .transaction-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 14px;
+        }
+        .btn {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin: 5px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-secondary {
+            background: linear-gradient(45deg, #999, #666);
+        }
+        .notification {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        .notification-info {
+            background: rgba(79, 172, 254, 0.2);
+            border: 1px solid #4facfe;
+            color: #4facfe;
+        }
+        .notification-success {
+            background: rgba(40, 167, 69, 0.2);
+            border: 1px solid #28a745;
+            color: #28a745;
+        }
+        .notification-warning {
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid #ffc107;
+            color: #ffc107;
+        }
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid #4facfe;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .disclaimer {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        .disclaimer-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #ffc107;
+        }
+        .disclaimer-text {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            opacity: 0.9;
+        }
+    </style>
 </head>
 <body>
-  <h1>Solana Pay Demo</h1>
-  <button class="wallet-button" onclick="connectWallet()">Connect Wallet</button>
-  <p id="wallet-status">Wallet not connected</p>
-  <button class="pay-button" id="pay-button" onclick="makePayment()" disabled>Pay 1 SOL</button>
-  <p class="status" id="payment-status"></p>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🚀 Crypto Learning Tool</div>
+            <div class="subtitle">Educational Solana Wallet Connection Demo</div>
+        </div>
 
-  <script src="https://unpkg.com/@solana/web3.js@1.93.0/lib/index.iife.min.js"></script>
-  <script src="https://unpkg.com/@solana/wallet-adapter-base@0.9.23/dist/index.js"></script>
-  <script src="https://unpkg.com/@solana/wallet-adapter-wallets@0.19.32/dist/index.js"></script>
-  <script src="https://unpkg.com/bignumber.js@9.1.2/bignumber.min.js"></script>
-  <script>
-    const { solana } = window;
-    const { PublicKey, SystemProgram, Transaction } = window.SolanaWeb3;
-    const { PhantomWalletAdapter } = window.SolanaWalletAdapterWallets;
-    let wallet = null;
-    const recipientAddress = 'gnsmrrUDxBe7F9rrWkN7EY51G7jMQsu1A8hnmx5JXmk';
-    const connection = new SolanaWeb3.Connection('https://api.devnet.solana.com', 'confirmed');
-    const amount = new BigNumber(1);
+```
+    <!-- Wallet Connection Section -->
+    <div class="wallet-section">
+        <div class="wallet-header">
+            <div>
+                <h2>🔗 Wallet Connection</h2>
+                <div class="wallet-status">
+                    <div class="status-indicator" id="statusIndicator"></div>
+                    <span id="statusText">Not Connected</span>
+                </div>
+            </div>
+            <button class="connect-btn" id="connectBtn" onclick="connectWallet()">
+                Connect Phantom Wallet
+            </button>
+        </div>
+        
+        <div class="wallet-info" id="walletInfo">
+            <div class="balance-display">
+                Balance: <span id="balanceAmount">-- SOL</span>
+            </div>
+            <div>
+                <strong>Wallet Address:</strong>
+                <div class="address-display" id="addressDisplay">
+                    <span id="walletAddress">--</span>
+                    <button class="copy-btn" onclick="copyAddress()">Copy</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Features Section -->
+    <div class="feature-section">
+        <div class="feature-title">
+            ⚡ Features
+        </div>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔐</div>
+                <div class="feature-name">Secure Connection</div>
+                <div class="feature-desc">Connect your Phantom wallet securely using the official Solana Web3 API</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💰</div>
+                <div class="feature-name">Balance Checking</div>
+                <div class="feature-desc">View your current SOL balance and account information</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🔍</div>
+                <div class="feature-name">Transaction Simulation</div>
+                <div class="feature-desc">Learn about transactions without actually sending funds</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📚</div>
+                <div class="feature-name">Educational</div>
+                <div class="feature-desc">Understand how wallet connections and blockchain interactions work</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Simulation Section -->
+    <div class="transaction-section">
+        <div class="feature-title">
+            💸 Transaction Simulator
+        </div>
+        <div class="notification notification-info">
+            <strong>📝 Educational Only:</strong> This section simulates transactions for learning purposes. No real transactions are executed.
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Recipient Address (Simulation)</label>
+            <input type="text" class="form-input" id="recipientAddress" placeholder="Enter Solana address" disabled>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Amount (SOL)</label>
+            <input type="number" class="form-input" id="amount" placeholder="0.00" step="0.001" disabled>
+        </div>
+        
+        <button class="btn" id="simulateBtn" onclick="simulateTransaction()" disabled>
+            Simulate Transaction
+        </button>
+        <button class="btn btn-secondary" onclick="clearSimulation()">
+            Clear
+        </button>
+        
+        <div id="simulationResult"></div>
+    </div>
+
+    <!-- Disclaimer -->
+    <div class="disclaimer">
+        <div class="disclaimer-title">⚠️ Educational Disclaimer</div>
+        <div class="disclaimer-text">
+            This is an educational tool designed to demonstrate how cryptocurrency wallet connections work. 
+            It uses real wallet APIs but does not execute actual transactions or store any sensitive information. 
+            Always verify you're interacting with legitimate applications when using real cryptocurrency.
+            <br><br>
+            <strong>Key Learning Points:</strong>
+            <ul style="margin-top: 10px; padding-left: 20px;">
+                <li>Wallet connections should always be user-initiated</li>
+                <li>Real applications should clearly state what they do</li>
+                <li>Never share private keys or seed phrases</li>
+                <li>Always verify transaction details before signing</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    let walletConnected = false;
+    let walletAddress = '';
+    let balance = 0;
+
+    // Check if Phantom wallet is available
+    function checkWalletAvailable() {
+        if (window.solana && window.solana.isPhantom) {
+            return true;
+        }
+        return false;
+    }
+
+    // Connect wallet function
     async function connectWallet() {
-      try {
-        wallet = new PhantomWalletAdapter();
-        await wallet.connect();
-        document.getElementById('wallet-status').textContent = `Wallet connected: ${wallet.publicKey.toString()}`;
-        document.getElementById('pay-button').disabled = false;
-      } catch (error) {
-        document.getElementById('wallet-status').textContent = 'Wallet connection failed';
-        console.error('Connection error:', error);
-      }
+        const connectBtn = document.getElementById('connectBtn');
+        
+        if (!checkWalletAvailable()) {
+            showNotification('warning', '⚠️ Phantom wallet not detected. Please install Phantom wallet extension.');
+            return;
+        }
+
+        connectBtn.innerHTML = '<div class="loading"></div>Connecting...';
+        connectBtn.disabled = true;
+
+        try {
+            // Request connection to Phantom wallet
+            const response = await window.solana.connect();
+            walletAddress = response.publicKey.toString();
+            walletConnected = true;
+
+            // Update UI
+            updateWalletStatus(true);
+            document.getElementById('walletAddress').textContent = walletAddress;
+            
+            // Get balance
+            await updateBalance();
+            
+            showNotification('success', '✅ Wallet connected successfully!');
+            
+            // Enable transaction simulation
+            enableTransactionSimulator();
+            
+        } catch (error) {
+            console.log('Wallet connection cancelled or failed:', error);
+            showNotification('warning', '❌ Wallet connection was cancelled or failed.');
+            connectBtn.innerHTML = 'Connect Phantom Wallet';
+            connectBtn.disabled = false;
+        }
     }
 
-    async function makePayment() {
-      if (!wallet || !wallet.publicKey) {
-        document.getElementById('payment-status').textContent = 'Please connect your wallet.';
-        return;
-      }
+    // Update wallet connection status
+    function updateWalletStatus(connected) {
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
+        const walletInfo = document.getElementById('walletInfo');
+        const connectBtn = document.getElementById('connectBtn');
 
-      try {
-        document.getElementById('payment-status').textContent = 'Processing payment...';
-        const recipient = new PublicKey(recipientAddress);
-        const transaction = new Transaction().add(
-          SystemProgram.transfer({
-            fromPubkey: wallet.publicKey,
-            toPubkey: recipient,
-            lamports: amount.times(1_000_000_000).toNumber(),
-          })
-        );
-
-        const { blockhash } = await connection.getLatestBlockhash();
-        transaction.recentBlockhash = blockhash;
-        transaction.feePayer = wallet.publicKey;
-
-        const { signature } = await wallet.signTransaction(transaction);
-        const txid = await connection.sendRawTransaction(transaction.serialize());
-        document.getElementById('payment-status').textContent = `Transaction sent: ${txid}`;
-
-        await connection.confirmTransaction(txid, 'confirmed');
-        document.getElementById('payment-status').textContent = '✅ Payment of 1 SOL successful!';
-        document.getElementById('payment-status').classList.add('success');
-      } catch (error) {
-        document.getElementById('payment-status').textContent = `❌ Payment failed: ${error.message}`;
-        console.error('Payment error:', error);
-      }
+        if (connected) {
+            statusIndicator.classList.add('connected');
+            statusText.textContent = 'Connected';
+            walletInfo.classList.add('show');
+            connectBtn.innerHTML = 'Disconnect';
+            connectBtn.onclick = disconnectWallet;
+        } else {
+            statusIndicator.classList.remove('connected');
+            statusText.textContent = 'Not Connected';
+            walletInfo.classList.remove('show');
+            connectBtn.innerHTML = 'Connect Phantom Wallet';
+            connectBtn.onclick = connectWallet;
+            connectBtn.disabled = false;
+        }
     }
-  </script>
+
+    // Disconnect wallet
+    async function disconnectWallet() {
+        try {
+            await window.solana.disconnect();
+            walletConnected = false;
+            walletAddress = '';
+            balance = 0;
+            updateWalletStatus(false);
+            disableTransactionSimulator();
+            showNotification('info', '👋 Wallet disconnected.');
+        } catch (error) {
+            console.log('Disconnect error:', error);
+        }
+    }
+
+    // Update balance (simulated for demo)
+    async function updateBalance() {
+        try {
+            // In a real app, you would call the Solana RPC to get actual balance
+            // For demo purposes, we'll simulate a balance
+            balance = Math.random() * 5; // Random balance between 0-5 SOL
+            document.getElementById('balanceAmount').textContent = balance.toFixed(3) + ' SOL';
+        } catch (error) {
+            document.getElementById('balanceAmount').textContent = 'Error loading balance';
+        }
+    }
+
+    // Copy wallet address
+    function copyAddress() {
+        if (walletAddress) {
+            navigator.clipboard.writeText(walletAddress).then(() => {
+                showNotification('success', '📋 Address copied to clipboard!');
+            });
+        }
+    }
+
+    // Enable transaction simulator
+    function enableTransactionSimulator() {
+        document.getElementById('recipientAddress').disabled = false;
+        document.getElementById('amount').disabled = false;
+        document.getElementById('simulateBtn').disabled = false;
+    }
+
+    // Disable transaction simulator
+    function disableTransactionSimulator() {
+        document.getElementById('recipientAddress').disabled = true;
+        document.getElementById('amount').disabled = true;
+        document.getElementById('simulateBtn').disabled = true;
+        clearSimulation();
+    }
+
+    // Simulate transaction
+    async function simulateTransaction() {
+        const recipient = document.getElementById('recipientAddress').value.trim();
+        const amount = parseFloat(document.getElementById('amount').value);
+        const resultDiv = document.getElementById('simulationResult');
+
+        if (!recipient || !amount) {
+            showNotification('warning', '⚠️ Please fill in all fields.');
+            return;
+        }
+
+        if (amount > balance) {
+            showNotification('warning', '⚠️ Insufficient balance for this transaction.');
+            return;
+        }
+
+        // Show simulation progress
+        const simulateBtn = document.getElementById('simulateBtn');
+        simulateBtn.innerHTML = '<div class="loading"></div>Simulating...';
+        simulateBtn.disabled = true;
+
+        // Simulate processing time
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Generate fake transaction details
+        const txHash = 'TX_' + Math.random().toString(36).substring(2, 15).toUpperCase();
+        const fee = 0.000005; // Typical Solana fee
+
+        resultDiv.innerHTML = `
+            <div class="notification notification-success">
+                <strong>🎉 Transaction Simulation Complete!</strong><br>
+                <strong>From:</strong> ${walletAddress.substring(0, 8)}...${walletAddress.substring(-8)}<br>
+                <strong>To:</strong> ${recipient.substring(0, 8)}...${recipient.substring(-8)}<br>
+                <strong>Amount:</strong> ${amount} SOL<br>
+                <strong>Fee:</strong> ${fee} SOL<br>
+                <strong>Simulated TX Hash:</strong> ${txHash}<br>
+                <br>
+                <em>Note: This was only a simulation. No real transaction was executed.</em>
+            </div>
+        `;
+
+        simulateBtn.innerHTML = 'Simulate Transaction';
+        simulateBtn.disabled = false;
+    }
+
+    // Clear simulation
+    function clearSimulation() {
+        document.getElementById('recipientAddress').value = '';
+        document.getElementById('amount').value = '';
+        document.getElementById('simulationResult').innerHTML = '';
+    }
+
+    // Show notification
+    function showNotification(type, message) {
+        // Remove existing notifications
+        const existingNotifications = document.querySelectorAll('.notification-temp');
+        existingNotifications.forEach(n => n.remove());
+
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type} notification-temp`;
+        notification.innerHTML = message;
+        
+        document.querySelector('.container').insertBefore(notification, document.querySelector('.wallet-section'));
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            notification.remove();
+        }, 5000);
+    }
+
+    // Initialize on page load
+    window.onload = function() {
+        if (!checkWalletAvailable()) {
+            showNotification('info', '💡 To fully experience this demo, please install the Phantom wallet extension.');
+        } else {
+            showNotification('info', '🎓 Welcome to the Crypto Learning Tool! This demonstrates legitimate wallet connection practices.');
+        }
+    };
+</script>
+```
+
 </body>
 </html>
